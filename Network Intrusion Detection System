@@ -1,0 +1,60 @@
+Run Snort in Packet Sniffing Mode
+bash
+Copy
+Edit
+sudo snort -i eth0 -A console -q -c /etc/snort/snort.conf
+-i: interface to listen on
+
+-A console: alert mode to console
+
+-q: quiet (less output)
+
+-c: config file path
+
+Replace eth0 with your actual interface.
+
+Create a Simple Rule
+Create a local rules file:
+
+bash
+Copy
+Edit
+sudo nano /etc/snort/rules/local.rules
+Add this rule (detects ping):
+
+snort
+Copy
+Edit
+alert icmp any any -> any any (msg:"ICMP Packet Detected"; sid:1000001; rev:1;)
+Edit the main config file to include your rule:
+
+bash
+Copy
+Edit
+sudo nano /etc/snort/snort.conf
+Find the line:
+
+bash
+Copy
+Edit
+include $RULE_PATH/local.rules
+Make sure it's uncommented.
+ Test the Rule
+Start Snort:
+
+bash
+Copy
+Edit
+sudo snort -A console -q -i eth0 -c /etc/snort/snort.conf
+In another terminal, run a ping:
+
+bash
+Copy
+Edit
+ping -c 1 8.8.8.8
+Snort should detect it and print:
+
+css
+Copy
+Edit
+[**] [1:1000001:1] ICMP Packet Detected [**]
