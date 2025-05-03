@@ -1,0 +1,83 @@
+ A static code analyzer for Python.
+ Finds common security issues like use of `eval()`, weak hashing algorithms, and hardcoded passwords.
+
+---
+
+Sample Insecure Python Code (`insecure_app.py`)
+
+```python
+import os
+import hashlib
+
+def login(user_input_password):
+    stored_password_hash = hashlib.md5("securepassword".encode()).hexdigest()
+    input_password_hash = hashlib.md5(user_input_password.encode()).hexdigest()
+    if input_password_hash == stored_password_hash:
+        print("Login successful!")
+    else:
+        print("Access denied.")
+
+def run_command(cmd):
+    os.system(cmd)
+
+user_input = input("Enter command: ")
+run_command(user_input)
+```
+
+---
+
+Run Bandit on the File
+
+Install Bandit if you haven’t:
+
+```bash
+pip install bandit
+```
+
+Run analysis:
+
+```bash
+bandit insecure_app.py
+```
+
+
+Bandit Findings (Typical)
+
+1[B303] Use of `md5` is insecure** – weak hashing algorithm.
+2[B602] Use of `os.system` with input** – potential command injection.
+
+
+Recommendations
+
+1. **Use `hashlib.sha256` or `bcrypt`** for secure password hashing.
+2. **Avoid using `os.system()` with unsanitized user input**. Use the `subprocess` module with argument lists or input validation.
+
+---
+
+Fixed Version (`secure_app.py`)
+
+```python
+import subprocess
+import hashlib
+
+def login(user_input_password):
+    stored_password_hash = hashlib.sha256("securepassword".encode()).hexdigest()
+    input_password_hash = hashlib.sha256(user_input_password.encode()).hexdigest()
+    if input_password_hash == stored_password_hash:
+        print("Login successful!")
+    else:
+        print("Access denied.")
+
+def run_command(cmd):
+    safe_commands = ["ls", "pwd", "whoami"]
+    if cmd in safe_commands:
+        subprocess.run([cmd])
+    else:
+        print("Command not allowed.")
+
+user_input = input("Enter command: ")
+run_command(user_input)
+```
+
+---
+
